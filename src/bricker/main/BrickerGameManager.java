@@ -8,7 +8,6 @@ import bricker.brick_strategies.BasicCollisionStrategy;
 import danogl.GameManager;
 import danogl.GameObject;
 
-import danogl.collisions.GameObjectCollection;
 import danogl.collisions.Layer;
 import danogl.components.CoordinateSpace;
 import danogl.gui.*;
@@ -148,7 +147,7 @@ public class BrickerGameManager extends GameManager {
 	private void createPaddle(ImageReader imageReader, UserInputListener inputListener) {
 		Renderable paddleImage = imageReader.readImage("assets/assets/paddle.png", true);
 		GameObject userPaddle =  new Paddle(Vector2.ZERO, new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
-				paddleImage, inputListener);
+				paddleImage, inputListener, windowDimensions);
 		userPaddle.setCenter(new Vector2(windowDimensions.x()/2, windowDimensions.y()-PADDLE_FROM_EDGE));
 		gameObjects().addGameObject(userPaddle, Layer.DEFAULT);
 	}

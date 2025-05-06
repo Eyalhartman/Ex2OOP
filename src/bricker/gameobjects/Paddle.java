@@ -11,6 +11,7 @@ public class Paddle extends GameObject {
 
 	private static final float MOVEMENT_SPEED = 300;
 	private final UserInputListener inputListener;
+	private final Vector2 windowDimensions;
 
 	/**
 	 * Construct a new GameObject instance.
@@ -20,11 +21,17 @@ public class Paddle extends GameObject {
 	 * @param dimensions    Width and height in window coordinates.
 	 * @param renderable    The renderable representing the object. Can be null, in which case
 	 *                      the GameObject will not be rendered.
-	 * @param inputListener
+	 * @param inputListener The input listener for user input.
+	 * @param windowDimensions The dimensionsof the window.
 	 */
-	public Paddle(Vector2 topLeftCorner, Vector2 dimensions, Renderable renderable, UserInputListener inputListener) {
+	public Paddle(Vector2 topLeftCorner,
+				  Vector2 dimensions,
+				  Renderable renderable,
+				  UserInputListener inputListener,
+				  Vector2 windowDimensions) {
 		super(topLeftCorner, dimensions, renderable);
 		this.inputListener = inputListener;
+		this.windowDimensions = windowDimensions;
 	}
 
 	@Override
@@ -37,8 +44,16 @@ public class Paddle extends GameObject {
 		if (this.inputListener.isKeyPressed(KeyEvent.VK_RIGHT))   {
 			movementDir = movementDir.add(Vector2.RIGHT);
 		}
-//todo להוסיף גבולות לפאדלס
 		setVelocity(movementDir.mult(MOVEMENT_SPEED));
+		Vector2 topLeft = getTopLeftCorner();
+		float paddleWidth = getDimensions().x();
+		float windowWidth = windowDimensions.x();
+		float minX = 0f;
+		float maxX = windowWidth - paddleWidth;
+		float clampedX = Math.max(minX, Math.min(topLeft.x(), maxX));
+		if (clampedX != topLeft.x()) {
+			setTopLeftCorner(new Vector2(clampedX, topLeft.y()));
+		}
 	}
 }
 
