@@ -1,5 +1,6 @@
 package bricker.main;
 
+import bricker.brick_strategies.PuckStrategy;
 import bricker.gameobjects.Ball;
 import bricker.gameobjects.Brick;
 import bricker.gameobjects.Paddle;
@@ -7,6 +8,7 @@ import bricker.brick_strategies.BasicCollisionStrategy;
 import danogl.GameManager;
 import danogl.GameObject;
 
+import danogl.collisions.GameObjectCollection;
 import danogl.collisions.Layer;
 import danogl.components.CoordinateSpace;
 import danogl.gui.*;
@@ -28,6 +30,7 @@ import static java.lang.Integer.parseInt;
 public class BrickerGameManager extends GameManager {
 
 	private final static int SIZE_BALL = 20;
+	public static final int PUCK_SIZE = SIZE_BALL * 3 / 4;
 	private final static int BALL_SPEED = 100;
 	private final static float PADDLE_WIDTH = 100;
 	private final static float PADDLE_BRICK_HEIGHT = 15;
@@ -88,8 +91,6 @@ public class BrickerGameManager extends GameManager {
 
 		this.windowController = windowController;
 		windowController.setTargetFramerate(60);
-
-
 
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 
@@ -253,14 +254,27 @@ public class BrickerGameManager extends GameManager {
 		float brick_width = len_bricks/this.num_bricks;
 		for (int row = 0; row<this.num_lines; row++){
 			float y = row*(50)+50;
-			//todo
+			//todo fix the rows and the probability of the special bricks
 			for (int col=0; col<this.num_bricks; col++){
 				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
-				 GameObject brick = new Brick(new Vector2(x, y),
-						new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
-						,brickImage, new BasicCollisionStrategy(this));
-				 gameObjects().addGameObject(brick, Layer.DEFAULT);
-				 bricksCounter.increment();
+				if (col==1){
+					Vector2 puckLoc = new Vector2(x+(brick_width/2),y);
+
+					GameObject brick = new Brick(new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
+							,brickImage, new PuckStrategy(imageReader, soundReader, gameObjects(),
+							puckLoc, new Vector2(PUCK_SIZE,PUCK_SIZE),BALL_SPEED,
+							new BasicCollisionStrategy(this), windowDimensions, this));
+					gameObjects().addGameObject(brick, Layer.DEFAULT);
+					bricksCounter.increment();
+				}
+				else {
+					GameObject brick = new Brick(new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
+							, brickImage, new BasicCollisionStrategy(this));
+					gameObjects().addGameObject(brick, Layer.DEFAULT);
+					bricksCounter.increment();
+				}
 			}
 		}
 	}
