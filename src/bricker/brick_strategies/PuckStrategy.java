@@ -31,9 +31,15 @@ public class PuckStrategy implements CollisionStrategy{
 	private final Vector2 puck_loc;
 
 
-	public PuckStrategy(ImageReader imageReader, SoundReader soundReader,
-						GameObjectCollection gameObjects, Vector2 puckLoc, Vector2 puckSize, int speed,
-						CollisionStrategy basicCollisionStrategy, Vector2 windowDimensions, BrickerGameManager brickerGameManager){
+	public PuckStrategy(ImageReader imageReader,
+						SoundReader soundReader,
+						GameObjectCollection gameObjects,
+						Vector2 puckLoc,
+						Vector2 puckSize,
+						int speed,
+						CollisionStrategy basicCollisionStrategy,
+						Vector2 windowDimensions,
+						BrickerGameManager brickerGameManager){
 		this.imageReader = imageReader;
 		this.soundReader = soundReader;
 		this.gameObjects = gameObjects;

@@ -1,5 +1,6 @@
 package bricker.main;
 
+import bricker.brick_strategies.ExtraPaddleStrategy;
 import bricker.brick_strategies.PuckStrategy;
 import bricker.gameobjects.Ball;
 import bricker.gameobjects.Brick;
@@ -54,6 +55,8 @@ public class BrickerGameManager extends GameManager {
 	private GameObject[] hearts;
 
 	private Counter bricksCounter = new Counter();
+	private Counter extraPaddlesCount = new Counter();
+
 
 
 	private ImageReader imageReader;
@@ -62,7 +65,6 @@ public class BrickerGameManager extends GameManager {
 	private TextRenderable numericLife;
 	private GameObject numericLifeObject;
 
-	private boolean wKeyHandled = false;
 
 
 
@@ -81,8 +83,10 @@ public class BrickerGameManager extends GameManager {
 
 
 	@Override
-	public void initializeGame(ImageReader imageReader, SoundReader soundReader,
-							   UserInputListener inputListener, WindowController windowController) {
+	public void initializeGame(ImageReader imageReader,
+							   SoundReader soundReader,
+							   UserInputListener inputListener,
+							   WindowController windowController) {
 
 		this.imageReader = imageReader;
 		this.soundReader = soundReader;
@@ -146,7 +150,8 @@ public class BrickerGameManager extends GameManager {
 
 	private void createPaddle(ImageReader imageReader, UserInputListener inputListener) {
 		Renderable paddleImage = imageReader.readImage("assets/assets/paddle.png", true);
-		GameObject userPaddle =  new Paddle(Vector2.ZERO, new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
+		GameObject userPaddle =  new Paddle(Vector2.ZERO,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
 				paddleImage, inputListener, windowDimensions);
 		userPaddle.setCenter(new Vector2(windowDimensions.x()/2, windowDimensions.y()-PADDLE_FROM_EDGE));
 		gameObjects().addGameObject(userPaddle, Layer.DEFAULT);
@@ -219,7 +224,6 @@ public class BrickerGameManager extends GameManager {
 		}
 	}
 
-
 	private void restartGame() {
 		Iterable<GameObject> objectsDefault = gameObjects().objectsInLayer(Layer.DEFAULT);
 		for (GameObject object:objectsDefault){
@@ -239,12 +243,12 @@ public class BrickerGameManager extends GameManager {
 		num_lives = MAX_STREAKS;
 
 		bricksCounter.reset();
+		extraPaddlesCount.reset();
 
 		// Recreate game objects
 		initializeGame(imageReader, soundReader, inputListener, windowController);
 
 	}
-
 
 	private void createBricks(ImageReader imageReader, Vector2 windowDimensions) {
 		Renderable brickImage = imageReader.readImage("assets/assets/brick.png", false);
@@ -256,7 +260,7 @@ public class BrickerGameManager extends GameManager {
 			//todo fix the rows and the probability of the special bricks
 			for (int col=0; col<this.num_bricks; col++){
 				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
-				if (col==1){
+				if (col==3){
 					Vector2 puckLoc = new Vector2(x+(brick_width/2),y);
 
 					GameObject brick = new Brick(new Vector2(x, y),
@@ -264,6 +268,16 @@ public class BrickerGameManager extends GameManager {
 							,brickImage, new PuckStrategy(imageReader, soundReader, gameObjects(),
 							puckLoc, new Vector2(PUCK_SIZE,PUCK_SIZE),BALL_SPEED,
 							new BasicCollisionStrategy(this), windowDimensions, this));
+					gameObjects().addGameObject(brick, Layer.DEFAULT);
+					bricksCounter.increment();
+				}
+				else if (col==2){
+					GameObject brick = new Brick(new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
+							, brickImage, new ExtraPaddleStrategy(this,
+							new BasicCollisionStrategy(this), gameObjects(), imageReader,
+							soundReader, brickImage, inputListener, windowDimensions,
+							new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT)));
 					gameObjects().addGameObject(brick, Layer.DEFAULT);
 					bricksCounter.increment();
 				}
@@ -301,6 +315,11 @@ public class BrickerGameManager extends GameManager {
 		}
 		ball.setVelocity(new Vector2(ballVelX, ballVelY));
 	}
+
+	public int getExtraPaddlesCount() { return extraPaddlesCount.value(); }
+	public void incrementExtraPaddles() { extraPaddlesCount.increment(); }
+	public void decrementExtraPaddles() { extraPaddlesCount.decrement(); }
+
 
 
 	private void creatingWalls(Vector2 windowDimensions) {

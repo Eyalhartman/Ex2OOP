@@ -22,7 +22,7 @@ public class Paddle extends GameObject {
 	 * @param renderable    The renderable representing the object. Can be null, in which case
 	 *                      the GameObject will not be rendered.
 	 * @param inputListener The input listener for user input.
-	 * @param windowDimensions The dimensionsof the window.
+	 * @param windowDimensions The dimensions of the window.
 	 */
 	public Paddle(Vector2 topLeftCorner,
 				  Vector2 dimensions,
