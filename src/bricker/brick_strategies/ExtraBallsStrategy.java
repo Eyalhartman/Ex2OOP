@@ -18,6 +18,10 @@ import java.util.Random;
 public class ExtraBallsStrategy implements CollisionStrategy{
 
 	private static final int NUM_PUCKS = 2;
+	private static final String PUCK_IMAGE = "assets/assets/mockBall.png";
+	private static final String PUCK_SOUND = "assets/assets/blop.wav";
+
+
 	private final ImageReader imageReader;
 	private final SoundReader soundReader;
 	private final GameObjectCollection gameObjects;
@@ -26,11 +30,12 @@ public class ExtraBallsStrategy implements CollisionStrategy{
 	private final CollisionStrategy basicCollisionStrategy;
 	private final Vector2 windowDimensions;
 	private final BrickerGameManager brickerGameManager;
-	private final Vector2 puck_loc;
+
+
 
 
 	public ExtraBallsStrategy(ImageReader imageReader, SoundReader soundReader,
-							  GameObjectCollection gameObjects, Vector2 puckLoc, Vector2 puckSize, int speed,
+							  GameObjectCollection gameObjects, Vector2 puckSize, int speed,
 							  CollisionStrategy basicCollisionStrategy, Vector2 windowDimensions, BrickerGameManager brickerGameManager){
 		this.imageReader = imageReader;
 		this.soundReader = soundReader;
@@ -40,21 +45,24 @@ public class ExtraBallsStrategy implements CollisionStrategy{
 		this.basicCollisionStrategy = basicCollisionStrategy;
 		this.windowDimensions = windowDimensions;
 		this.brickerGameManager = brickerGameManager;
-		this.puck_loc = puckLoc;
 	}
 
 	@Override
 	public void onCollision(GameObject object1, GameObject object2) {
 		basicCollisionStrategy.onCollision(object1, object2);
-		createPucks();
+		Vector2 spawnCenter = object1.getCenter(); // the center of the brick!
+
+		createPucks(spawnCenter);
 	}
 
 
-	private void createPucks() {
-		Renderable ballImage = this.imageReader.readImage("assets/assets/mockBall.png", true);
-		Sound collisionSound = soundReader.readSound("assets/assets/blop.wav");
+	private void createPucks(Vector2 spawnCenter) {
+		Renderable ballImage = this.imageReader.readImage(PUCK_IMAGE, true);
+		Sound collisionSound = soundReader.readSound(PUCK_SOUND);
+
 		for (int i = 0; i<NUM_PUCKS;i++){
-			PuckBall ball =  new PuckBall(puck_loc,
+
+			PuckBall ball =  new PuckBall(spawnCenter,
 					puckSize,
 					ballImage,
 					collisionSound, gameObjects,

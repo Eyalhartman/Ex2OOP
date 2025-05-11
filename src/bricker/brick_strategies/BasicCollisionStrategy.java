@@ -33,7 +33,9 @@ public class BasicCollisionStrategy implements CollisionStrategy {
 	 */
 	@Override
 	public void onCollision(GameObject object1, GameObject object2) {
-		brickerGameManager.removeGameObject(object1); // Remove the brick from the game
-		brickerGameManager.decrementCounter();        // Decrease remaining bricks count
+
+		if(brickerGameManager.removeGameObject(object1)){ // Remove the brick from the game
+		brickerGameManager.decrementCounter();
+		}
 	}
 }

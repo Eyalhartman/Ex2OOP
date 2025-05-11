@@ -23,6 +23,11 @@ public class ReturnStreakStrategy implements CollisionStrategy{
 	private final Vector2 heartDimensions;
 	private final BrickerGameManager gameManager;
 
+	private static final float CENTER_OFFSET_FACTOR = 0.5f;
+	private static final int FALLING_HEART_SPEED_Y = 100;
+	private static final int FALLING_HEART_SPEED_X = 0;
+
+
 	/**
 	 * Constructs a new ReturnStreakStrategy instance.
 	 *
@@ -63,8 +68,8 @@ public class ReturnStreakStrategy implements CollisionStrategy{
 
 		Vector2 center   = brick.getCenter();
 		Vector2 topLeft = new Vector2(
-				center.x() - heartDimensions.x()*0.5f,
-				center.y() - heartDimensions.y()*0.5f
+				center.x() - heartDimensions.x()*CENTER_OFFSET_FACTOR,
+				center.y() - heartDimensions.y()*CENTER_OFFSET_FACTOR
 		);
 		FallingHeart h   = new FallingHeart(
 				topLeft, heartDimensions,
@@ -74,7 +79,7 @@ public class ReturnStreakStrategy implements CollisionStrategy{
 				originalPaddle,
 				gameManager
 		);
-		h.setVelocity(new Vector2(0, 100));
+		h.setVelocity(new Vector2(FALLING_HEART_SPEED_X, FALLING_HEART_SPEED_Y));
 		gameObjects.addGameObject(h, Layer.DEFAULT);
 	}
 }

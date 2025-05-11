@@ -43,6 +43,7 @@ public class TurboModeStrategy implements CollisionStrategy {
 		this.ball = ball;
 	}
 
+
 	/**
 	 * Handles the collision event. If the turbo mode is not yet active,
 	 * it enables turbo mode for the ball (unless the ball is a puck).

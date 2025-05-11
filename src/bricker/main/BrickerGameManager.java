@@ -29,7 +29,7 @@ public class BrickerGameManager extends GameManager {
 
 	private final static int SIZE_BALL = 20;
 	public static final int PUCK_SIZE = SIZE_BALL * 3 / 4;
-	private final static int BALL_SPEED = 100;
+	private final static int BALL_SPEED = 150;
 	private final static float PADDLE_WIDTH = 100;
 	private final static float PADDLE_BRICK_HEIGHT = 15;
 	private final static float PADDLE_FROM_EDGE = 30;
@@ -56,8 +56,8 @@ public class BrickerGameManager extends GameManager {
 	private GameObject[] hearts;
 	private TurboModeStrategy turboStrategy;
 	private Renderable turboImage;
-	private Vector2 puckLoc;
 	private FactoryDoubleStrategy strategyDoubleFactory;
+
 
 	private Counter bricksCounter = new Counter();
 	private final Counter extraPaddlesCount = new Counter();
@@ -71,12 +71,14 @@ public class BrickerGameManager extends GameManager {
 	private GameObject numericLifeObject;
 
 
-
+	private static boolean isInteger(String s) {
+		return s != null && s.matches("-?\\d+");
+	}
 
 
 	public BrickerGameManager(String windowTitle, Vector2 windowDimensions, String[] args){
 		super(windowTitle, windowDimensions);
-		if (args.length==0){
+		if (args.length<2 ||  !isInteger(args[FIRST_ARG]) || !isInteger(args[SECOND_ARG])){
 			this.num_lines = DEF_LINES;
 			this.num_bricks = DEF_BRICKS;
 		}
@@ -96,30 +98,14 @@ public class BrickerGameManager extends GameManager {
 		this.imageReader = imageReader;
 		this.soundReader = soundReader;
 		this.inputListener = inputListener;
-
 		this.windowController = windowController;
 		wHandled = false;
 
+		this.turboStrategy = null;
+
+
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 		windowDimensions = windowController.getWindowDimensions();
-
-		strategyDoubleFactory = new FactoryDoubleStrategy(
-				imageReader,
-				soundReader,
-				gameObjects(),
-				puckLoc, // can be any placeholder Vector2 (used by ExtraBallsStrategy)
-				new Vector2(PUCK_SIZE, PUCK_SIZE),
-				BALL_SPEED,
-				new BasicCollisionStrategy(this),
-				windowDimensions,
-				this,
-				ball,
-				turboImage,
-				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
-				inputListener,
-				(Paddle)userPaddle,
-				heartImage,
-				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
 
 		//creating background
 		createBackground(imageReader);
@@ -133,20 +119,40 @@ public class BrickerGameManager extends GameManager {
 		//creating walls
 		creatingWalls(windowDimensions);
 
-		//creating bricks
-		createBricks(imageReader, windowDimensions);
-
 		//creating hearts
 		createHearts(imageReader);
 
 		createNumeric();
+
+		turboImage = imageReader.readImage("assets/assets/redball.png", false);
+		strategyDoubleFactory = new FactoryDoubleStrategy(
+				imageReader,
+				soundReader,
+				gameObjects(),
+				new Vector2(PUCK_SIZE, PUCK_SIZE),
+				BALL_SPEED,
+				new BasicCollisionStrategy(this),
+				windowDimensions,
+				this,
+				ball,
+				turboImage,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
+				inputListener,
+				(Paddle)userPaddle,
+				heartImage,
+				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
+
+
+		//creating bricks
+		createBricks(imageReader, windowDimensions);
+
 
 
 	}
 
 	private void createNumeric() {
 		numericLife = new TextRenderable(Integer.toString(num_lives));
-		if (num_lives >= 3){
+		if (num_lives >= INITIAL_HEART_COUNT){
 			numericLife.setColor(Color.green);
 		}
 		numericLifeObject = new GameObject(new Vector2(2 * WALLS_WIDTH,
@@ -203,8 +209,9 @@ public class BrickerGameManager extends GameManager {
 		super.update(deltaTime);
 		double ballHeight = this.ball.getCenter().y();
 		String prompt="";
-		turboStrategy.update(deltaTime);
-
+		if (turboStrategy != null) {
+			turboStrategy.update(deltaTime);
+		}
 
 		if (ballHeight >windowDimensions.y() ){
 			if (this.num_lives > 0){
@@ -267,12 +274,16 @@ public class BrickerGameManager extends GameManager {
 
 		// Reset internal state
 		num_lives = INITIAL_HEART_COUNT;
-
 		bricksCounter.reset();
 		extraPaddlesCount.reset();
 
 		// Recreate game objects
 		initializeGame(imageReader, soundReader, inputListener, windowController);
+
+		turboStrategy = null;
+
+		Renderable defaultBall = imageReader.readImage("assets/assets/ball.png", true);
+		ball.renderer().setRenderable(defaultBall);
 	}
 
 	private void createBricks(ImageReader imageReader, Vector2 windowDimensions) {
@@ -293,18 +304,17 @@ public class BrickerGameManager extends GameManager {
 
 				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
 				if (1<= choose_behavior && choose_behavior<=5){
+
 					brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
 							, brickImage, new BasicCollisionStrategy(this));
 				}
 				else if (choose_behavior == 6){
-					puckLoc = new Vector2(x+(brick_width/2),y);
 					brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
 							,brickImage, new ExtraBallsStrategy(imageReader,
 							soundReader,
 							gameObjects(),
-							puckLoc,
 							new Vector2(PUCK_SIZE,PUCK_SIZE),
 							BALL_SPEED,
 							new BasicCollisionStrategy(this),
@@ -354,8 +364,7 @@ public class BrickerGameManager extends GameManager {
 
 
 				else if (choose_behavior == 10) {
-					puckLoc = new Vector2(x+(brick_width/2),y);
-					CollisionStrategy strategyDouble = strategyDoubleFactory.buildStrategy(0);
+					CollisionStrategy strategyDouble = strategyDoubleFactory.buildDoubleStrategy();
 
 					brick = new Brick(
 							new Vector2(x, y),
@@ -365,6 +374,7 @@ public class BrickerGameManager extends GameManager {
 				}
 				gameObjects().addGameObject(brick, Layer.DEFAULT);
 				bricksCounter.increment();
+
 			}
 		}
 	}

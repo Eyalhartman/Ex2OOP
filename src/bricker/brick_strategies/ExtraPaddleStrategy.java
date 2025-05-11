@@ -14,6 +14,13 @@ import danogl.util.Vector2;
 
 public class ExtraPaddleStrategy implements CollisionStrategy{
 
+
+	private static final float PADDLE_SPAWN_X_Y_FACTOR = 2f;
+	private static final String EXTRA_PADDLE_IMAGE_PATH = "assets/assets/paddle.png";
+	private static final boolean USE_TRANSPARENCY = true;
+	private static final int NO_EXTRA_PADDLES = 0;
+
+
 	private final BrickerGameManager brickerGameManager;
 	private final CollisionStrategy basicCollisionStrategy;
 	private final GameObjectCollection gameObjects;
@@ -63,13 +70,14 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 		}
 		basicCollisionStrategy.onCollision(object1, object2);
 
-		if (brickerGameManager.getExtraPaddlesCount() == 0) {
+		if (brickerGameManager.getExtraPaddlesCount() == NO_EXTRA_PADDLES)
+		{
 			Vector2 center = new Vector2(
-					windowDimensions.x() / 2f,
-					windowDimensions.y() / 2f
+					windowDimensions.x() / PADDLE_SPAWN_X_Y_FACTOR,
+					windowDimensions.y() / PADDLE_SPAWN_X_Y_FACTOR
 			);
 
-			Renderable paddleImage = imageReader.readImage("assets/assets/paddle.png", true);
+			Renderable paddleImage = imageReader.readImage(EXTRA_PADDLE_IMAGE_PATH, USE_TRANSPARENCY);
 			ExtraPaddle newPaddle = new ExtraPaddle(center,
 						paddleDimensions,
 						paddleImage,
