@@ -15,7 +15,7 @@ import danogl.util.Vector2;
  * The heart will increase the player's lives when it collides with the paddle.
  */
 public class ReturnStreakStrategy implements CollisionStrategy{
-	private final CollisionStrategy delegate;
+	private final CollisionStrategy basicCollisionStrategy;
 	private final GameObjectCollection gameObjects;
 	private final Vector2 windowDimensions;
 	private final Paddle originalPaddle;
@@ -41,7 +41,7 @@ public class ReturnStreakStrategy implements CollisionStrategy{
 							  Renderable heartImage,
 							  Vector2 heartDimensions,
 							  BrickerGameManager gameManager) {
-		this.delegate         = delegate;
+		this.basicCollisionStrategy         = delegate;
 		this.gameObjects      = gameObjects;
 		this.windowDimensions = windowDimensions;
 		this.originalPaddle   = originalPaddle;
@@ -59,7 +59,7 @@ public class ReturnStreakStrategy implements CollisionStrategy{
 	public void onCollision(GameObject brick, GameObject other) {
 		if (!(other instanceof bricker.gameobjects.Ball)) return;
 
-		delegate.onCollision(brick, other);
+		basicCollisionStrategy.onCollision(brick, other);
 
 		Vector2 center   = brick.getCenter();
 		Vector2 topLeft = new Vector2(

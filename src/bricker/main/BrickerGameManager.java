@@ -93,7 +93,7 @@ public class BrickerGameManager extends GameManager {
 		this.inputListener = inputListener;
 
 		this.windowController = windowController;
-		windowController.setTargetFramerate(60);
+		//windowController.setTargetFramerate(60);
 
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 
@@ -209,7 +209,7 @@ public class BrickerGameManager extends GameManager {
 		}
 
 		//todo fix the loop
-		if (inputListener.isKeyPressed(KeyEvent.VK_W)) {
+		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W)) {
 			prompt += "You win! Play again?";
 			if (windowController.openYesNoDialog(prompt)) {
 				restartGame();
