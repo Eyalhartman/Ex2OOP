@@ -11,6 +11,7 @@ import danogl.gui.UserInputListener;
 import danogl.gui.rendering.Renderable;
 import danogl.util.Vector2;
 
+
 public class ExtraPaddleStrategy implements CollisionStrategy{
 
 	private final BrickerGameManager brickerGameManager;
@@ -23,7 +24,19 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	private final Vector2 windowDimensions;
 	private final Vector2 paddleDimensions;
 
-
+    	/**
+	 * Constructor for ExtraPaddleStrategy.
+	 *
+	 * @param brickerGameManager The game manager for managing game state.
+	 * @param basicCollisionStrategy The basic collision strategy to delegate to.
+	 * @param gameObjects The collection of game objects in the game.
+	 * @param imageReader The image reader for loading images.
+	 * @param soundReader The sound reader for loading sounds.
+	 * @param paddleRenderable The renderable representing the paddle.
+	 * @param inputListener The input listener for user input.
+	 * @param windowDimensions The dimensions of the window.
+	 * @param paddleDimensions The dimensions of the paddle.
+	 */
 	public ExtraPaddleStrategy(BrickerGameManager brickerGameManager, CollisionStrategy basicCollisionStrategy, GameObjectCollection gameObjects, ImageReader imageReader, SoundReader soundReader, Renderable paddleRenderable, UserInputListener inputListener, Vector2 windowDimensions, Vector2 paddleDimensions){
 		this.brickerGameManager = brickerGameManager;
 		this.basicCollisionStrategy = basicCollisionStrategy;
@@ -37,7 +50,13 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	}
 
 
-
+    	/**
+	 * Handles the collision between a brick and a ball.
+	 * If the player has no extra paddles, creates a new ExtraPaddle object.
+	 *
+	 * @param object1 The first object involved in the collision (the brick).
+	 * @param object2 The second object involved in the collision (the ball).
+	 */
 	@Override
 	public void onCollision(GameObject object1, GameObject object2) {
 		if (!(object2 instanceof bricker.gameobjects.Ball)) {

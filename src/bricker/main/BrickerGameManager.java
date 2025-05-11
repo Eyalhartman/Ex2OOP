@@ -1,11 +1,9 @@
 package bricker.main;
 
-import bricker.brick_strategies.ExtraPaddleStrategy;
-import bricker.brick_strategies.PuckStrategy;
+import bricker.brick_strategies.*;
 import bricker.gameobjects.Ball;
 import bricker.gameobjects.Brick;
 import bricker.gameobjects.Paddle;
-import bricker.brick_strategies.BasicCollisionStrategy;
 import danogl.GameManager;
 import danogl.GameObject;
 
@@ -41,7 +39,8 @@ public class BrickerGameManager extends GameManager {
 	private final static int DEF_LINES = 7;
 	private final static int DEF_BRICKS = 8;
 	private final static int ADDED_SPACE = 1;
-	private final static int MAX_STREAKS = 3;
+	private final static int MAX_STREAKS = 4;
+	private static final int INITIAL_HEART_COUNT = 3;
 	private final static int HEART_HEIGHT_WIDTH = 20;
 	private final static int NUMERIC_HEIGHT_WIDTH = 23;
 
@@ -49,16 +48,17 @@ public class BrickerGameManager extends GameManager {
 	private final int num_lines;
 	private final int num_bricks;
 	private Ball ball;
+	private Paddle userPaddle;
 	private Vector2 windowDimensions;
 	private WindowController windowController;
-	private int num_lives = MAX_STREAKS;
+	private int num_lives = INITIAL_HEART_COUNT;
 	private GameObject[] hearts;
 
 	private Counter bricksCounter = new Counter();
-	private Counter extraPaddlesCount = new Counter();
+	private final Counter extraPaddlesCount = new Counter();
 
 
-
+	private Renderable heartImage;
 	private ImageReader imageReader;
 	private SoundReader soundReader;
 	private UserInputListener inputListener;
@@ -128,7 +128,7 @@ public class BrickerGameManager extends GameManager {
 		numericLifeObject = new GameObject(new Vector2(2 * WALLS_WIDTH,
 				windowDimensions.y() - HEART_HEIGHT_WIDTH - NUMERIC_HEIGHT_WIDTH -5),
 				new Vector2(NUMERIC_HEIGHT_WIDTH, NUMERIC_HEIGHT_WIDTH), numericLife);
-		gameObjects().addGameObject(numericLifeObject);
+		gameObjects().addGameObject(numericLifeObject, Layer.BACKGROUND);
 	}
 
 	public void decrementCounter() {
@@ -155,19 +155,23 @@ public class BrickerGameManager extends GameManager {
 				paddleImage, inputListener, windowDimensions);
 		userPaddle.setCenter(new Vector2(windowDimensions.x()/2, windowDimensions.y()-PADDLE_FROM_EDGE));
 		gameObjects().addGameObject(userPaddle, Layer.DEFAULT);
+		this.userPaddle = (Paddle)userPaddle;
 	}
 
 	private void createHearts(ImageReader imageReader) {
-		Renderable heartImage = imageReader.readImage("assets/assets/heart.png",true);
+		this.heartImage = imageReader.readImage("assets/assets/heart.png", true);
 		float len_heart = HEART_HEIGHT_WIDTH+1;
 		hearts = new GameObject[MAX_STREAKS];
-		num_lives = MAX_STREAKS;
 		for(int i=0; i<MAX_STREAKS; i++){
 			hearts[i] = new GameObject(new Vector2(2*WALLS_WIDTH+(i*len_heart),
 					windowDimensions.y()-HEART_HEIGHT_WIDTH-2),
 					new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH), heartImage);
+			if (i == INITIAL_HEART_COUNT)
+				hearts[i].renderer().setRenderable(null);
 			gameObjects().addGameObject(hearts[i], Layer.BACKGROUND);
+
 		}
+		num_lives = INITIAL_HEART_COUNT;
 	}
 
 	@Override
@@ -178,19 +182,10 @@ public class BrickerGameManager extends GameManager {
 
 		if (ballHeight >windowDimensions.y() ){
 			if (this.num_lives > 0){
-				gameObjects().removeGameObject(hearts[--this.num_lives],Layer.BACKGROUND);
-				System.out.println(num_lives);
+				hearts[num_lives - 1].renderer().setRenderable(null);
+				num_lives--;
 				setVelocityBall();
-				numericLife.setString(Integer.toString(num_lives));
-				if (num_lives >= 3){
-					numericLife.setColor(Color.green);
-				}
-				if (num_lives==2){
-					numericLife.setColor(Color.yellow);
-				}
-				if (num_lives ==1){
-					numericLife.setColor(Color.red);
-				}
+				updateLifeDisplay();
 			}
 		}
 		if (ballHeight > windowDimensions.y() && this.num_lives == 0) {
@@ -240,18 +235,19 @@ public class BrickerGameManager extends GameManager {
 		}
 
 		// Reset internal state
-		num_lives = MAX_STREAKS;
+		num_lives = INITIAL_HEART_COUNT;
 
 		bricksCounter.reset();
 		extraPaddlesCount.reset();
 
 		// Recreate game objects
 		initializeGame(imageReader, soundReader, inputListener, windowController);
-
 	}
 
 	private void createBricks(ImageReader imageReader, Vector2 windowDimensions) {
 		Renderable brickImage = imageReader.readImage("assets/assets/brick.png", false);
+		Renderable heartImage = imageReader.readImage("assets/assets/heart.png", true);
+		Vector2 heartDimensions = new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH);
 
 		float len_bricks = windowDimensions.x()-(2*WALLS_WIDTH+2)-(this.num_bricks-1);
 		float brick_width = len_bricks/this.num_bricks;
@@ -278,6 +274,25 @@ public class BrickerGameManager extends GameManager {
 							new BasicCollisionStrategy(this), gameObjects(), imageReader,
 							soundReader, brickImage, inputListener, windowDimensions,
 							new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT)));
+					gameObjects().addGameObject(brick, Layer.DEFAULT);
+					bricksCounter.increment();
+				}
+				else if (col == 1) {
+					CollisionStrategy heartStrat = new ReturnStreakStrategy(
+							new BasicCollisionStrategy(this),
+							gameObjects(),
+							windowDimensions,
+							(Paddle)userPaddle,
+							heartImage,
+							heartDimensions,
+							this
+					);
+					GameObject brick = new Brick(
+							new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT),
+							brickImage,
+							heartStrat
+					);
 					gameObjects().addGameObject(brick, Layer.DEFAULT);
 					bricksCounter.increment();
 				}
@@ -319,6 +334,31 @@ public class BrickerGameManager extends GameManager {
 	public int getExtraPaddlesCount() { return extraPaddlesCount.value(); }
 	public void incrementExtraPaddles() { extraPaddlesCount.increment(); }
 	public void decrementExtraPaddles() { extraPaddlesCount.decrement(); }
+
+	/**
+	 * Decreases the number of lives by one and updates the life display.
+	 * If the number of lives is greater than 0, it removes the heart image from the display.
+	 */
+	public void incrementLives() {
+		if (num_lives < MAX_STREAKS) {
+			hearts[num_lives].renderer().setRenderable(heartImage);
+			num_lives++;
+			updateLifeDisplay();
+		}
+	}
+
+
+	/** Updates the color of the numeric life display based on the number of lives.
+	 * If the number of lives is 3 or more, the color is green.
+	 * If the number of lives is 2, the color is yellow.
+	 * If the number of lives is 1 or less, the color is red.
+	 */
+	private void updateLifeDisplay() {
+		numericLife.setString(Integer.toString(num_lives));
+		if (num_lives >= 3) numericLife.setColor(Color.green);
+		else if (num_lives == 2) numericLife.setColor(Color.yellow);
+		else                numericLife.setColor(Color.red);
+	}
 
 
 

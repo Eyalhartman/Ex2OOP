@@ -8,6 +8,10 @@ import danogl.gui.UserInputListener;
 import danogl.gui.rendering.Renderable;
 import danogl.util.Vector2;
 
+/**
+ * Represents an extra paddle that can be collected by the player.
+ * The extra paddle has a limited number of hits before it is removed from the game.
+ */
 public class ExtraPaddle extends Paddle{
 	private static final int MAX_HITS = 4;
 	private int hitCount = 0;
@@ -36,10 +40,22 @@ public class ExtraPaddle extends Paddle{
 		this.gameObjects = gameObjects;
 		this.gameManager = gameManager;
 	}
+	/**
+	 * Updates the extra paddle's position and checks for collisions.
+	 *
+	 * @param deltaTime The time since the last update.
+	 */
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
 	}
+	/**
+	 * Handles the collision with the ball.
+	 * Increases the player's lives and removes the extra paddle from the game.
+	 *
+	 * @param other     The other object involved in the collision (the ball).
+	 * @param collision The collision information.
+	 */
 	@Override
 	public void onCollisionEnter(GameObject other, Collision collision) {
 		if (!(other instanceof bricker.gameobjects.Ball)) {

@@ -13,6 +13,9 @@ public class Paddle extends GameObject {
 	private final UserInputListener inputListener;
 	private final Vector2 windowDimensions;
 
+	private int ignoreFrames = 2;
+
+
 	/**
 	 * Construct a new GameObject instance.
 	 *
@@ -37,6 +40,10 @@ public class Paddle extends GameObject {
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
+		if (ignoreFrames > 0) {
+			ignoreFrames--;
+			return;
+		}
 		Vector2 movementDir = Vector2.ZERO;
 		if (this.inputListener.isKeyPressed(KeyEvent.VK_LEFT))   {
 			movementDir = movementDir.add(Vector2.LEFT);
@@ -55,5 +62,6 @@ public class Paddle extends GameObject {
 			setTopLeftCorner(new Vector2(clampedX, topLeft.y()));
 		}
 	}
+
 }
 
