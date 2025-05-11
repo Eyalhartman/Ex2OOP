@@ -53,6 +53,10 @@ public class BrickerGameManager extends GameManager {
 	private WindowController windowController;
 	private int num_lives = INITIAL_HEART_COUNT;
 	private GameObject[] hearts;
+	private TurboModeStrategy turboStrategy;
+	private Renderable turboImage;
+	private Vector2 puckLoc;
+	private FactoryDoubleStrategy strategyDoubleFactory;
 
 	private Counter bricksCounter = new Counter();
 	private final Counter extraPaddlesCount = new Counter();
@@ -96,7 +100,6 @@ public class BrickerGameManager extends GameManager {
 		//windowController.setTargetFramerate(60);
 
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
-
 		windowDimensions = windowController.getWindowDimensions();
 
 		//creating background
@@ -118,6 +121,24 @@ public class BrickerGameManager extends GameManager {
 		createHearts(imageReader);
 
 		createNumeric();
+
+		strategyDoubleFactory = new FactoryDoubleStrategy(
+				imageReader,
+				soundReader,
+				gameObjects(),
+				puckLoc, // can be any placeholder Vector2 (used by ExtraBallsStrategy)
+				new Vector2(PUCK_SIZE, PUCK_SIZE),
+				BALL_SPEED,
+				new BasicCollisionStrategy(this),
+				windowDimensions,
+				this,
+				ball,
+				turboImage,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
+				inputListener,
+				(Paddle)userPaddle,
+				heartImage,
+				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
 	}
 
 	private void createNumeric() {
@@ -209,7 +230,15 @@ public class BrickerGameManager extends GameManager {
 		}
 
 		//todo fix the loop
-		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W)) {
+		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W ) ) {
+				prompt += "You win! Play again?";
+				if (windowController.openYesNoDialog(prompt)) {
+					restartGame();
+				} else {
+					windowController.closeWindow();
+				}
+			}
+		if (inputListener.wasKeyReleasedThisFrame(KeyEvent.VK_W ) ) {
 			prompt += "You win! Play again?";
 			if (windowController.openYesNoDialog(prompt)) {
 				restartGame();
@@ -217,6 +246,7 @@ public class BrickerGameManager extends GameManager {
 				windowController.closeWindow();
 			}
 		}
+
 	}
 
 	private void restartGame() {
@@ -248,36 +278,71 @@ public class BrickerGameManager extends GameManager {
 		Renderable brickImage = imageReader.readImage("assets/assets/brick.png", false);
 		Renderable heartImage = imageReader.readImage("assets/assets/heart.png", true);
 		Vector2 heartDimensions = new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH);
+		Random random = new Random();
+		float verticalSpacing = 2;
+
+
 
 		float len_bricks = windowDimensions.x()-(2*WALLS_WIDTH+2)-(this.num_bricks-1);
 		float brick_width = len_bricks/this.num_bricks;
 		for (int row = 0; row<this.num_lines; row++){
-			float y = row*(50)+50;
+			float y = row * (PADDLE_BRICK_HEIGHT + verticalSpacing);
 			//todo fix the rows and the probability of the special bricks
 			for (int col=0; col<this.num_bricks; col++){
-				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
-				if (col==3){
-					Vector2 puckLoc = new Vector2(x+(brick_width/2),y);
 
-					GameObject brick = new Brick(new Vector2(x, y),
+				int choose_behavior = random.nextInt(11);
+				GameObject brick = null;
+
+				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
+				if (1<= choose_behavior && choose_behavior<=5){
+					brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
-							,brickImage, new PuckStrategy(imageReader, soundReader, gameObjects(),
-							puckLoc, new Vector2(PUCK_SIZE,PUCK_SIZE),BALL_SPEED,
-							new BasicCollisionStrategy(this), windowDimensions, this));
+							, brickImage, new BasicCollisionStrategy(this));
 					gameObjects().addGameObject(brick, Layer.DEFAULT);
 					bricksCounter.increment();
 				}
-				else if (col==2){
-					GameObject brick = new Brick(new Vector2(x, y),
+				else if (choose_behavior == 6){
+					puckLoc = new Vector2(x+(brick_width/2),y);
+					brick = new Brick(new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
+							,brickImage, new ExtraBallsStrategy(imageReader,
+							soundReader,
+							gameObjects(),
+							puckLoc,
+							new Vector2(PUCK_SIZE,PUCK_SIZE),
+							BALL_SPEED,
+							new BasicCollisionStrategy(this),
+							windowDimensions,
+							this));
+					gameObjects().addGameObject(brick, Layer.DEFAULT);
+					bricksCounter.increment();
+
+				} else if (choose_behavior == 7) {
+					 brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
 							, brickImage, new ExtraPaddleStrategy(this,
-							new BasicCollisionStrategy(this), gameObjects(), imageReader,
-							soundReader, brickImage, inputListener, windowDimensions,
+							new BasicCollisionStrategy(this),
+							 gameObjects(),
+							 imageReader,
+							 inputListener,
+							 windowDimensions,
 							new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT)));
+				}
+
+				else if (choose_behavior == 8){
+					Renderable turboImage = imageReader.readImage("assets/assets/redball.png", false);
+					this.turboStrategy = new TurboModeStrategy(ball, new BasicCollisionStrategy(this),
+							turboImage);
+
+					brick = new Brick(new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
+							, brickImage, turboStrategy);
 					gameObjects().addGameObject(brick, Layer.DEFAULT);
 					bricksCounter.increment();
 				}
-				else if (col == 1) {
+
+
+				else if(choose_behavior == 9){
 					CollisionStrategy heartStrat = new ReturnStreakStrategy(
 							new BasicCollisionStrategy(this),
 							gameObjects(),
@@ -287,22 +352,28 @@ public class BrickerGameManager extends GameManager {
 							heartDimensions,
 							this
 					);
-					GameObject brick = new Brick(
+					brick = new Brick(
 							new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT),
 							brickImage,
 							heartStrat
 					);
-					gameObjects().addGameObject(brick, Layer.DEFAULT);
-					bricksCounter.increment();
 				}
-				else {
-					GameObject brick = new Brick(new Vector2(x, y),
-							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
-							, brickImage, new BasicCollisionStrategy(this));
-					gameObjects().addGameObject(brick, Layer.DEFAULT);
-					bricksCounter.increment();
+
+
+				else if (choose_behavior == 10) {
+					puckLoc = new Vector2(x+(brick_width/2),y);
+					CollisionStrategy strategyDouble = strategyDoubleFactory.buildStrategy(0);
+
+					brick = new Brick(
+							new Vector2(x, y),
+							new Vector2(brick_width, PADDLE_BRICK_HEIGHT), brickImage, strategyDouble
+					);
+					gameObjects().addGameObject(brick);
+
 				}
+				gameObjects().addGameObject(brick, Layer.DEFAULT);
+				bricksCounter.increment();
 			}
 		}
 	}

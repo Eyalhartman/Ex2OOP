@@ -18,8 +18,6 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	private final CollisionStrategy basicCollisionStrategy;
 	private final GameObjectCollection gameObjects;
 	private final ImageReader imageReader;
-	private final SoundReader soundReader;
-	private final Renderable paddleRenderable;
 	private final UserInputListener inputListener;
 	private final Vector2 windowDimensions;
 	private final Vector2 paddleDimensions;
@@ -31,19 +29,20 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	 * @param basicCollisionStrategy The basic collision strategy to delegate to.
 	 * @param gameObjects The collection of game objects in the game.
 	 * @param imageReader The image reader for loading images.
-	 * @param soundReader The sound reader for loading sounds.
-	 * @param paddleRenderable The renderable representing the paddle.
 	 * @param inputListener The input listener for user input.
 	 * @param windowDimensions The dimensions of the window.
 	 * @param paddleDimensions The dimensions of the paddle.
 	 */
-	public ExtraPaddleStrategy(BrickerGameManager brickerGameManager, CollisionStrategy basicCollisionStrategy, GameObjectCollection gameObjects, ImageReader imageReader, SoundReader soundReader, Renderable paddleRenderable, UserInputListener inputListener, Vector2 windowDimensions, Vector2 paddleDimensions){
+	public ExtraPaddleStrategy(BrickerGameManager brickerGameManager,
+							   CollisionStrategy basicCollisionStrategy,
+							   GameObjectCollection gameObjects,
+							   ImageReader imageReader,
+							   UserInputListener inputListener,
+							   Vector2 windowDimensions, Vector2 paddleDimensions){
 		this.brickerGameManager = brickerGameManager;
 		this.basicCollisionStrategy = basicCollisionStrategy;
 		this.gameObjects = gameObjects;
 		this.imageReader = imageReader;
-		this.soundReader = soundReader;
-		this.paddleRenderable = paddleRenderable;
 		this.inputListener = inputListener;
 		this.windowDimensions = windowDimensions;
 		this.paddleDimensions = paddleDimensions;
