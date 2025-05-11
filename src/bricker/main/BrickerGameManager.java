@@ -102,6 +102,24 @@ public class BrickerGameManager extends GameManager {
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 		windowDimensions = windowController.getWindowDimensions();
 
+		strategyDoubleFactory = new FactoryDoubleStrategy(
+				imageReader,
+				soundReader,
+				gameObjects(),
+				puckLoc, // can be any placeholder Vector2 (used by ExtraBallsStrategy)
+				new Vector2(PUCK_SIZE, PUCK_SIZE),
+				BALL_SPEED,
+				new BasicCollisionStrategy(this),
+				windowDimensions,
+				this,
+				ball,
+				turboImage,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
+				inputListener,
+				(Paddle)userPaddle,
+				heartImage,
+				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
+
 		//creating background
 		createBackground(imageReader);
 
@@ -122,23 +140,7 @@ public class BrickerGameManager extends GameManager {
 
 		createNumeric();
 
-		strategyDoubleFactory = new FactoryDoubleStrategy(
-				imageReader,
-				soundReader,
-				gameObjects(),
-				puckLoc, // can be any placeholder Vector2 (used by ExtraBallsStrategy)
-				new Vector2(PUCK_SIZE, PUCK_SIZE),
-				BALL_SPEED,
-				new BasicCollisionStrategy(this),
-				windowDimensions,
-				this,
-				ball,
-				turboImage,
-				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
-				inputListener,
-				(Paddle)userPaddle,
-				heartImage,
-				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
+
 	}
 
 	private void createNumeric() {
@@ -281,16 +283,13 @@ public class BrickerGameManager extends GameManager {
 		Random random = new Random();
 		float verticalSpacing = 2;
 
-
-
 		float len_bricks = windowDimensions.x()-(2*WALLS_WIDTH+2)-(this.num_bricks-1);
 		float brick_width = len_bricks/this.num_bricks;
 		for (int row = 0; row<this.num_lines; row++){
-			float y = row * (PADDLE_BRICK_HEIGHT + verticalSpacing);
-			//todo fix the rows and the probability of the special bricks
+			float y = WALLS_WIDTH + row * (PADDLE_BRICK_HEIGHT + verticalSpacing);
 			for (int col=0; col<this.num_bricks; col++){
 
-				int choose_behavior = random.nextInt(11);
+				int choose_behavior = random.nextInt(1,11);
 				GameObject brick = null;
 
 				float x = WALLS_WIDTH+ col*(brick_width +ADDED_SPACE);
@@ -298,8 +297,6 @@ public class BrickerGameManager extends GameManager {
 					brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
 							, brickImage, new BasicCollisionStrategy(this));
-					gameObjects().addGameObject(brick, Layer.DEFAULT);
-					bricksCounter.increment();
 				}
 				else if (choose_behavior == 6){
 					puckLoc = new Vector2(x+(brick_width/2),y);
@@ -314,8 +311,6 @@ public class BrickerGameManager extends GameManager {
 							new BasicCollisionStrategy(this),
 							windowDimensions,
 							this));
-					gameObjects().addGameObject(brick, Layer.DEFAULT);
-					bricksCounter.increment();
 
 				} else if (choose_behavior == 7) {
 					 brick = new Brick(new Vector2(x, y),
@@ -337,8 +332,6 @@ public class BrickerGameManager extends GameManager {
 					brick = new Brick(new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT)
 							, brickImage, turboStrategy);
-					gameObjects().addGameObject(brick, Layer.DEFAULT);
-					bricksCounter.increment();
 				}
 
 
@@ -369,7 +362,6 @@ public class BrickerGameManager extends GameManager {
 							new Vector2(x, y),
 							new Vector2(brick_width, PADDLE_BRICK_HEIGHT), brickImage, strategyDouble
 					);
-					gameObjects().addGameObject(brick);
 
 				}
 				gameObjects().addGameObject(brick, Layer.DEFAULT);
