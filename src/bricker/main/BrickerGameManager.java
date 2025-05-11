@@ -46,6 +46,7 @@ public class BrickerGameManager extends GameManager {
 
 
 	private final int num_lines;
+	private boolean wHandled = false;
 	private final int num_bricks;
 	private Ball ball;
 	private Paddle userPaddle;
@@ -97,7 +98,7 @@ public class BrickerGameManager extends GameManager {
 		this.inputListener = inputListener;
 
 		this.windowController = windowController;
-		//windowController.setTargetFramerate(60);
+		wHandled = false;
 
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 		windowDimensions = windowController.getWindowDimensions();
@@ -202,6 +203,8 @@ public class BrickerGameManager extends GameManager {
 		super.update(deltaTime);
 		double ballHeight = this.ball.getCenter().y();
 		String prompt="";
+		turboStrategy.update(deltaTime);
+
 
 		if (ballHeight >windowDimensions.y() ){
 			if (this.num_lives > 0){
@@ -231,22 +234,18 @@ public class BrickerGameManager extends GameManager {
 			}
 		}
 
-		//todo fix the loop
-		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W ) ) {
-				prompt += "You win! Play again?";
-				if (windowController.openYesNoDialog(prompt)) {
-					restartGame();
-				} else {
-					windowController.closeWindow();
-				}
+		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W )&& !wHandled ) {
+			wHandled = true;
+			boolean yes = windowController.openYesNoDialog("You win! Play again?");
+			if (yes) restartGame();
+			else    windowController.closeWindow();
+			return;
 			}
 		if (inputListener.wasKeyReleasedThisFrame(KeyEvent.VK_W ) ) {
-			prompt += "You win! Play again?";
-			if (windowController.openYesNoDialog(prompt)) {
-				restartGame();
-			} else {
-				windowController.closeWindow();
-			}
+			wHandled = true;
+			boolean yes = windowController.openYesNoDialog("You win! Play again?");
+			if (yes) restartGame();
+			else    windowController.closeWindow();
 		}
 
 	}
