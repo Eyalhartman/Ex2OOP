@@ -75,7 +75,6 @@ public class BrickerGameManager extends GameManager {
 	private final static String BRICKER = "Bricker";
 	private final static String RED_BALL_ADDRESS = "assets/assets/redball.png";
 
-
 	private final int numLines;
 	private boolean wHandled = false;
 	private final int numBricks;
@@ -88,7 +87,6 @@ public class BrickerGameManager extends GameManager {
 	private TurboModeStrategy turboStrategy;
 	private Renderable turboImage;
 	private FactoryDoubleStrategy strategyDoubleFactory;
-
 
 	private final Counter bricksCounter = new Counter();
 	private final Counter extraPaddlesCount = new Counter();
@@ -162,6 +160,51 @@ public class BrickerGameManager extends GameManager {
 	}
 
 	/**
+	 * Updates the game state and checks for win/lose conditions.
+	 *
+	 * @param deltaTime The time since the last update in seconds.
+	 */
+	@Override
+	public void update(float deltaTime) {
+		super.update(deltaTime);
+		double ballHeight = this.ball.getCenter().y();
+		if (turboStrategy != null) {
+			turboStrategy.update(deltaTime);
+		}
+		if (ballHeight >windowDimensions.y() ){
+			if (this.numLives > 0){
+				hearts[numLives - 1].renderer().setRenderable(null);
+				numLives--;
+				setVelocityBall();
+				Renderable defaultBall = imageReader.readImage(BALL_ADDRESS, true);
+				ball.renderer().setRenderable(defaultBall);
+				updateLifeDisplay();
+			}
+		}
+		if (ballHeight > windowDimensions.y() && this.numLives == 0) {
+			if (windowController.openYesNoDialog(LOOSE_STRING)) {
+				restartGame();
+			} else {
+				windowController.closeWindow();
+			}
+		}
+		if (bricksCounter.value() == 0) {
+			if (windowController.openYesNoDialog(WIN_STRING)) {
+				restartGame();
+			} else {
+				windowController.closeWindow();
+			}
+		}
+		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W )&& !wHandled ) {
+			wHandled = true;
+			boolean yes = windowController.openYesNoDialog(WIN_STRING);
+			if (yes) restartGame();
+			else    windowController.closeWindow();
+		}
+	}
+
+
+	/**
 	 * Decreases the counter of bricks by one.
 	 */
 	public void decrementCounter() {
@@ -210,50 +253,6 @@ public class BrickerGameManager extends GameManager {
 	 */
 	public boolean removeGameObject(GameObject object) {
 		return gameObjects().removeGameObject(object);
-	}
-
-	/**
-	 * Updates the game state and checks for win/lose conditions.
-	 *
-	 * @param deltaTime The time since the last update in seconds.
-	 */
-	@Override
-	public void update(float deltaTime) {
-		super.update(deltaTime);
-		double ballHeight = this.ball.getCenter().y();
-		if (turboStrategy != null) {
-			turboStrategy.update(deltaTime);
-		}
-		if (ballHeight >windowDimensions.y() ){
-			if (this.numLives > 0){
-				hearts[numLives - 1].renderer().setRenderable(null);
-				numLives--;
-				setVelocityBall();
-				Renderable defaultBall = imageReader.readImage(BALL_ADDRESS, true);
-				ball.renderer().setRenderable(defaultBall);
-				updateLifeDisplay();
-			}
-		}
-		if (ballHeight > windowDimensions.y() && this.numLives == 0) {
-			if (windowController.openYesNoDialog(LOOSE_STRING)) {
-				restartGame();
-			} else {
-				windowController.closeWindow();
-			}
-		}
-		if (bricksCounter.value() == 0) {
-			if (windowController.openYesNoDialog(WIN_STRING)) {
-				restartGame();
-			} else {
-				windowController.closeWindow();
-			}
-		}
-		if (inputListener.wasKeyPressedThisFrame(KeyEvent.VK_W )&& !wHandled ) {
-			wHandled = true;
-			boolean yes = windowController.openYesNoDialog(WIN_STRING);
-			if (yes) restartGame();
-			else    windowController.closeWindow();
-			}
 	}
 
 	/**
@@ -596,6 +595,7 @@ public class BrickerGameManager extends GameManager {
 		else if (numLives == 2) numericLife.setColor(Color.yellow);
 		else                numericLife.setColor(Color.red);
 	}
+
 	/**
 	 * The main method to run the game.
 	 *
