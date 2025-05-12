@@ -2,12 +2,14 @@ package bricker.brick_strategies;
 
 import bricker.main.BrickerGameManager;
 import danogl.GameObject;
-import danogl.collisions.GameObjectCollection;
+
 
 /**
  * BasicCollisionStrategy implements a simple collision behavior for bricks.
  * When a collision occurs, the brick (object1) is removed from the game,
  * and the brick counter in the BrickerGameManager is decremented.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class BasicCollisionStrategy implements CollisionStrategy {
 

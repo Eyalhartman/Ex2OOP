@@ -14,6 +14,8 @@ import danogl.util.Vector2;
  * After a certain number of collisions, the ball returns to its original
  * velocity and appearance.
  * </p>
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class TurboModeStrategy implements CollisionStrategy {
 
@@ -37,7 +39,8 @@ public class TurboModeStrategy implements CollisionStrategy {
 	 * @param basicCollisionStrategy The basic brick destruction behavior.
 	 * @param renderable            The renderable to apply to the ball during turbo mode.
 	 */
-	public TurboModeStrategy(Ball ball, BasicCollisionStrategy basicCollisionStrategy, Renderable renderable) {
+	public TurboModeStrategy(Ball ball, BasicCollisionStrategy basicCollisionStrategy,
+							 Renderable renderable) {
 		this.basicCollisionStrategy = basicCollisionStrategy;
 		this.renderable = renderable;
 		this.ball = ball;

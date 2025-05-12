@@ -10,6 +10,8 @@ import danogl.util.Vector2;
 /**
  * Represents a heart that falls from the brick when it is hit by a ball.
  * The heart will increase the player's lives when it collides with the paddle.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class FallingHeart extends GameObject {
 

@@ -6,20 +6,26 @@ import danogl.GameObject;
 import danogl.collisions.GameObjectCollection;
 import danogl.collisions.Layer;
 import danogl.gui.ImageReader;
-import danogl.gui.SoundReader;
 import danogl.gui.UserInputListener;
 import danogl.gui.rendering.Renderable;
 import danogl.util.Vector2;
 
-
+/**
+ * A collision strategy that adds an extra controllable paddle when a brick is hit.
+ * <p>
+ * This strategy wraps another basic collision strategy, performing its logic first.
+ * If the player currently has no extra paddle, it spawns a new one at the center
+ * of the game window, allowing the player to control an additional paddle temporarily.
+ * </p>
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
+ */
 public class ExtraPaddleStrategy implements CollisionStrategy{
-
 
 	private static final float PADDLE_SPAWN_X_Y_FACTOR = 2f;
 	private static final String EXTRA_PADDLE_IMAGE_PATH = "assets/assets/paddle.png";
 	private static final boolean USE_TRANSPARENCY = true;
 	private static final int NO_EXTRA_PADDLES = 0;
-
 
 	private final BrickerGameManager brickerGameManager;
 	private final CollisionStrategy basicCollisionStrategy;
@@ -29,7 +35,7 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	private final Vector2 windowDimensions;
 	private final Vector2 paddleDimensions;
 
-    	/**
+	/**
 	 * Constructor for ExtraPaddleStrategy.
 	 *
 	 * @param brickerGameManager The game manager for managing game state.
@@ -45,7 +51,7 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 							   GameObjectCollection gameObjects,
 							   ImageReader imageReader,
 							   UserInputListener inputListener,
-							   Vector2 windowDimensions, Vector2 paddleDimensions){
+							   Vector2 windowDimensions, Vector2 paddleDimensions) {
 		this.brickerGameManager = brickerGameManager;
 		this.basicCollisionStrategy = basicCollisionStrategy;
 		this.gameObjects = gameObjects;
@@ -56,7 +62,7 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 	}
 
 
-    	/**
+	/**
 	 * Handles the collision between a brick and a ball.
 	 * If the player has no extra paddles, creates a new ExtraPaddle object.
 	 *
@@ -70,8 +76,7 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 		}
 		basicCollisionStrategy.onCollision(object1, object2);
 
-		if (brickerGameManager.getExtraPaddlesCount() == NO_EXTRA_PADDLES)
-		{
+		if (brickerGameManager.getExtraPaddlesCount() == NO_EXTRA_PADDLES) {
 			Vector2 center = new Vector2(
 					windowDimensions.x() / PADDLE_SPAWN_X_Y_FACTOR,
 					windowDimensions.y() / PADDLE_SPAWN_X_Y_FACTOR
@@ -90,7 +95,5 @@ public class ExtraPaddleStrategy implements CollisionStrategy{
 			brickerGameManager.incrementExtraPaddles();
 			}
 		}
-
-
 	}
 

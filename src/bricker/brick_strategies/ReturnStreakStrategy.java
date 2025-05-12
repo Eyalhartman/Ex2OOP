@@ -13,6 +13,8 @@ import danogl.util.Vector2;
  * A strategy for handling the collision between a brick and a ball.
  * When a brick is hit by a ball, it creates a FallingHeart object that falls from the brick's position.
  * The heart will increase the player's lives when it collides with the paddle.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class ReturnStreakStrategy implements CollisionStrategy{
 	private final CollisionStrategy basicCollisionStrategy;

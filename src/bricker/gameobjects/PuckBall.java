@@ -16,6 +16,8 @@ import danogl.util.Vector2;
  * This class extends {@link Ball} and adds behavior such as
  * self-destruction when exiting the screen and managing game state
  * upon collisions with breakable objects.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class PuckBall extends Ball {
 	private final GameObjectCollection gameObjects;

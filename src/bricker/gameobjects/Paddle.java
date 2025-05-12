@@ -7,6 +7,13 @@ import danogl.util.Vector2;
 
 import java.awt.event.KeyEvent;
 
+/**
+ * Represents a paddle controlled by the player.
+ * The paddle moves left and right in response to keyboard input
+ * and is constrained within the horizontal bounds of the game window.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
+ */
 public class Paddle extends GameObject {
 
 	private static final float MOVEMENT_SPEED = 300;
@@ -37,6 +44,12 @@ public class Paddle extends GameObject {
 		this.windowDimensions = windowDimensions;
 	}
 
+	/**
+	 * Updates the paddle's position based on user input.
+	 * Enables movement after the first update call and ensures the paddle stays within window bounds.
+	 *
+	 * @param deltaTime Time passed since last frame, used for consistent movement speed.
+	 */
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
@@ -63,6 +76,5 @@ public class Paddle extends GameObject {
 			setTopLeftCorner(new Vector2(clampedX, topLeft.y()));
 		}
 	}
-
 }
 

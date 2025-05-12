@@ -8,6 +8,8 @@ import danogl.GameObject;
  * Implementations of this interface define the behavior that should occur
  * when a brick collides with another game object (e.g., the ball).
  * </p>
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public interface CollisionStrategy {
 	/**

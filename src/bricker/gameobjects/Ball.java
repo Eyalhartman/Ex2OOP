@@ -11,6 +11,8 @@ import danogl.util.Vector2;
  * The ball moves within the game window and bounces off other objects it collides with.
  * On each collision, it inverts its velocity based on the collision normal, plays a sound,
  * and increments its collision counter.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class Ball extends GameObject {
 

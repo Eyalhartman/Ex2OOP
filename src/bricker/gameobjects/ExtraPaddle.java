@@ -11,6 +11,8 @@ import danogl.util.Vector2;
 /**
  * Represents an extra paddle that can be collected by the player.
  * The extra paddle has a limited number of hits before it is removed from the game.
+ *
+ * @author Eyal Hartman, Dana Weitzhandler
  */
 public class ExtraPaddle extends Paddle{
 	private static final int MAX_HITS = 4;
@@ -30,12 +32,15 @@ public class ExtraPaddle extends Paddle{
 	 *                         the GameObject will not be rendered.
 	 * @param inputListener    The input listener for user input.
 	 * @param windowDimensions The dimensions of the window.
+	 * @param gameObjects      The collection of game objects, used to remove the paddle.
+	 * @param gameManager      Reference to the BrickerGameManager, used to update paddle count.
 	 */
 	public ExtraPaddle(Vector2 topLeftCorner,
 					   Vector2 dimensions,
 					   Renderable renderable,
 					   UserInputListener inputListener,
-					   Vector2 windowDimensions, GameObjectCollection gameObjects, BrickerGameManager gameManager) {
+					   Vector2 windowDimensions, GameObjectCollection gameObjects,
+					   BrickerGameManager gameManager) {
 		super(topLeftCorner, dimensions, renderable, inputListener, windowDimensions);
 		this.gameObjects = gameObjects;
 		this.gameManager = gameManager;

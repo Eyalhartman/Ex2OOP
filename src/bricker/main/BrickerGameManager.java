@@ -97,7 +97,7 @@ public class BrickerGameManager extends GameManager {
 		}
 	}
 
-    	/**
+	/**
 	 * Initializes the game by creating the game objects and setting up the game state.
 	 *
 	 * @param imageReader The image reader used to load images.

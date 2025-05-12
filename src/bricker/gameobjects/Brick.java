@@ -14,6 +14,8 @@ import danogl.util.Vector2;
  * instance, allowing flexible behavior such as disappearing, spawning
  * bonuses, or triggering special effects.
  * </p>
+ *
+ *  * @author Eyal Hartman, Dana Weitzhandler
  */
 public class Brick extends GameObject {
 	private final CollisionStrategy collisionStrategy;
