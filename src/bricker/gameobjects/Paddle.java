@@ -13,7 +13,7 @@ public class Paddle extends GameObject {
 	private final UserInputListener inputListener;
 	private final Vector2 windowDimensions;
 
-	private int ignoreFrames = 2;
+	private boolean enableMovement = false;
 
 
 	/**
@@ -40,8 +40,9 @@ public class Paddle extends GameObject {
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
-		if (ignoreFrames > 0) {
-			ignoreFrames--;
+		if (!enableMovement) {
+			inputListener.pressedKeys().clear();
+			enableMovement = true;
 			return;
 		}
 		Vector2 movementDir = Vector2.ZERO;

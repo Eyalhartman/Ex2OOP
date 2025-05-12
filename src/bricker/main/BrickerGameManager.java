@@ -25,10 +25,15 @@ import java.util.Random;
 
 import static java.lang.Integer.parseInt;
 
+/**
+ * The BrickerGameManager class manages the game state and logic for a simple brick-breaking game.
+ * It initializes the game objects, handles user input, and updates the game state.
+ * @author Dana and Eyal.
+ */
 public class BrickerGameManager extends GameManager {
 
 	private final static int SIZE_BALL = 20;
-	public static final int PUCK_SIZE = SIZE_BALL * 3 / 4;
+	private static final int PUCK_SIZE = SIZE_BALL * 3 / 4;
 	private final static int BALL_SPEED = 150;
 	private final static float PADDLE_WIDTH = 100;
 	private final static float PADDLE_BRICK_HEIGHT = 15;
@@ -43,23 +48,24 @@ public class BrickerGameManager extends GameManager {
 	private static final int INITIAL_HEART_COUNT = 3;
 	private final static int HEART_HEIGHT_WIDTH = 20;
 	private final static int NUMERIC_HEIGHT_WIDTH = 23;
+	private final static String RED_BALL_ADDRESS = "assets/assets/redball.png";
 
 
-	private final int num_lines;
+	private final int numLines;
 	private boolean wHandled = false;
-	private final int num_bricks;
+	private final int numBricks;
 	private Ball ball;
 	private Paddle userPaddle;
 	private Vector2 windowDimensions;
 	private WindowController windowController;
-	private int num_lives = INITIAL_HEART_COUNT;
+	private int numLives = INITIAL_HEART_COUNT;
 	private GameObject[] hearts;
 	private TurboModeStrategy turboStrategy;
 	private Renderable turboImage;
 	private FactoryDoubleStrategy strategyDoubleFactory;
 
 
-	private Counter bricksCounter = new Counter();
+	private final Counter bricksCounter = new Counter();
 	private final Counter extraPaddlesCount = new Counter();
 
 
@@ -71,139 +77,116 @@ public class BrickerGameManager extends GameManager {
 	private GameObject numericLifeObject;
 
 
-	private static boolean isInteger(String s) {
-		return s != null && s.matches("-?\\d+");
-	}
 
 
+	/**
+	 * Constructor for the BrickerGameManager class.
+	 *
+	 * @param windowTitle The title of the game window.
+	 * @param windowDimensions The dimensions of the game window.
+	 * @param args Command line arguments for the game.
+	 */
 	public BrickerGameManager(String windowTitle, Vector2 windowDimensions, String[] args){
 		super(windowTitle, windowDimensions);
-		if (args.length<2 ||  !isInteger(args[FIRST_ARG]) || !isInteger(args[SECOND_ARG])){
-			this.num_lines = DEF_LINES;
-			this.num_bricks = DEF_BRICKS;
-		}
-		else{
-			this.num_lines = parseInt(args[FIRST_ARG]);
-			this.num_bricks = parseInt(args[SECOND_ARG]);
+		if (args.length<2 ||  !isInteger(args[FIRST_ARG]) || !isInteger(args[SECOND_ARG])) {
+			this.numLines = DEF_LINES;
+			this.numBricks = DEF_BRICKS;
+		} else {
+			this.numLines = parseInt(args[FIRST_ARG]);
+			this.numBricks = parseInt(args[SECOND_ARG]);
 		}
 	}
 
-
+    	/**
+	 * Initializes the game by creating the game objects and setting up the game state.
+	 *
+	 * @param imageReader The image reader used to load images.
+	 * @param soundReader The sound reader used to load sounds.
+	 * @param inputListener The input listener for user input.
+	 * @param windowController The window controller for managing the game window.
+	 */
 	@Override
 	public void initializeGame(ImageReader imageReader,
 							   SoundReader soundReader,
 							   UserInputListener inputListener,
 							   WindowController windowController) {
-
 		this.imageReader = imageReader;
 		this.soundReader = soundReader;
 		this.inputListener = inputListener;
 		this.windowController = windowController;
 		wHandled = false;
-
 		this.turboStrategy = null;
-
-
 		super.initializeGame(imageReader, soundReader, inputListener, windowController);
 		windowDimensions = windowController.getWindowDimensions();
 
-		//creating background
 		createBackground(imageReader);
-
-		//creating ball
 		createBall(imageReader, soundReader, windowDimensions);
-
-		//creating user paddle
 		createPaddle(imageReader, inputListener);
-
-		//creating walls
 		creatingWalls(windowDimensions);
-
-		//creating hearts
 		createHearts(imageReader);
-
 		createNumeric();
 
-		turboImage = imageReader.readImage("assets/assets/redball.png", false);
-		strategyDoubleFactory = new FactoryDoubleStrategy(
-				imageReader,
-				soundReader,
-				gameObjects(),
-				new Vector2(PUCK_SIZE, PUCK_SIZE),
-				BALL_SPEED,
+		turboImage = imageReader.readImage(RED_BALL_ADDRESS, false);
+		strategyDoubleFactory = new FactoryDoubleStrategy(imageReader, soundReader,
+				gameObjects(), new Vector2(PUCK_SIZE, PUCK_SIZE), BALL_SPEED,
 				new BasicCollisionStrategy(this),
-				windowDimensions,
-				this,
-				ball,
-				turboImage,
-				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
-				inputListener,
-				(Paddle)userPaddle,
-				heartImage,
+				windowDimensions, this, ball, turboImage,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT), inputListener,
+				(Paddle)userPaddle, heartImage,
 				new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH));
-
-
-		//creating bricks
 		createBricks(imageReader, windowDimensions);
-
-
-
 	}
 
-	private void createNumeric() {
-		numericLife = new TextRenderable(Integer.toString(num_lives));
-		if (num_lives >= INITIAL_HEART_COUNT){
-			numericLife.setColor(Color.green);
-		}
-		numericLifeObject = new GameObject(new Vector2(2 * WALLS_WIDTH,
-				windowDimensions.y() - HEART_HEIGHT_WIDTH - NUMERIC_HEIGHT_WIDTH -5),
-				new Vector2(NUMERIC_HEIGHT_WIDTH, NUMERIC_HEIGHT_WIDTH), numericLife);
-		gameObjects().addGameObject(numericLifeObject, Layer.BACKGROUND);
-	}
-
+	/**
+	 * Decreases the counter of bricks by one.
+	 */
 	public void decrementCounter() {
 		bricksCounter.decrement();
 	}
 
+	/**
+	 * Returns the number of extra paddles.
+	 *
+	 * @return The number of extra paddles.
+	 * */
+	public int getExtraPaddlesCount() { return extraPaddlesCount.value(); }
+
+	/**
+	 * Increases the number of extra paddles by one.
+	 */
+	public void incrementExtraPaddles() { extraPaddlesCount.increment(); }
+
+	/**
+	 * Decreases the number of extra paddles by one.
+	 */
+	public void decrementExtraPaddles() { extraPaddlesCount.decrement(); }
+
+	/**
+	 * Decreases the number of lives by one and updates the life display.
+	 * If the number of lives is greater than 0, it removes the heart image from the display.
+	 */
+	public void incrementLives() {
+		if (numLives < MAX_STREAKS) {
+			hearts[numLives].renderer().setRenderable(heartImage);
+			numLives++;
+			updateLifeDisplay();
+		}
+	}
+
+	/**
+	 * Gets the game objects in the game. And then removes the game object from the game.
+	 *
+	 * @return The game objects in the game.
+	 */
 	public boolean removeGameObject(GameObject object) {
 		return gameObjects().removeGameObject(object);
 	}
 
-
-	private void createBackground(ImageReader imageReader) {
-		Renderable backgroundImage = imageReader.readImage("assets/assets/DARK_BG2_small.jpeg", true);
-		GameObject background = new GameObject(Vector2.ZERO, new Vector2(windowDimensions.x(),
-				windowDimensions.y()), backgroundImage);
-		gameObjects().addGameObject(background, Layer.BACKGROUND);
-		background.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
-	}
-
-	private void createPaddle(ImageReader imageReader, UserInputListener inputListener) {
-		Renderable paddleImage = imageReader.readImage("assets/assets/paddle.png", true);
-		GameObject userPaddle =  new Paddle(Vector2.ZERO,
-				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
-				paddleImage, inputListener, windowDimensions);
-		userPaddle.setCenter(new Vector2(windowDimensions.x()/2, windowDimensions.y()-PADDLE_FROM_EDGE));
-		gameObjects().addGameObject(userPaddle, Layer.DEFAULT);
-		this.userPaddle = (Paddle)userPaddle;
-	}
-
-	private void createHearts(ImageReader imageReader) {
-		this.heartImage = imageReader.readImage("assets/assets/heart.png", true);
-		float len_heart = HEART_HEIGHT_WIDTH+1;
-		hearts = new GameObject[MAX_STREAKS];
-		for(int i=0; i<MAX_STREAKS; i++){
-			hearts[i] = new GameObject(new Vector2(2*WALLS_WIDTH+(i*len_heart),
-					windowDimensions.y()-HEART_HEIGHT_WIDTH-2),
-					new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH), heartImage);
-			if (i == INITIAL_HEART_COUNT)
-				hearts[i].renderer().setRenderable(null);
-			gameObjects().addGameObject(hearts[i], Layer.BACKGROUND);
-
-		}
-		num_lives = INITIAL_HEART_COUNT;
-	}
-
+	/**
+	 * Updates the game state and checks for win/lose conditions.
+	 *
+	 * @param deltaTime The time since the last update in seconds.
+	 */
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
@@ -214,14 +197,16 @@ public class BrickerGameManager extends GameManager {
 		}
 
 		if (ballHeight >windowDimensions.y() ){
-			if (this.num_lives > 0){
-				hearts[num_lives - 1].renderer().setRenderable(null);
-				num_lives--;
+			if (this.numLives > 0){
+				hearts[numLives - 1].renderer().setRenderable(null);
+				numLives--;
 				setVelocityBall();
+				Renderable defaultBall = imageReader.readImage("assets/assets/ball.png", true);
+				ball.renderer().setRenderable(defaultBall);
 				updateLifeDisplay();
 			}
 		}
-		if (ballHeight > windowDimensions.y() && this.num_lives == 0) {
+		if (ballHeight > windowDimensions.y() && this.numLives == 0) {
 			prompt += "You lose! Play again?";
 			if (windowController.openYesNoDialog(prompt)){
 				restartGame();
@@ -254,9 +239,11 @@ public class BrickerGameManager extends GameManager {
 			if (yes) restartGame();
 			else    windowController.closeWindow();
 		}
-
 	}
 
+	/**
+	 * Restarts the game by removing all game objects and resetting the game state.
+	 */
 	private void restartGame() {
 		Iterable<GameObject> objectsDefault = gameObjects().objectsInLayer(Layer.DEFAULT);
 		for (GameObject object:objectsDefault){
@@ -273,7 +260,7 @@ public class BrickerGameManager extends GameManager {
 		}
 
 		// Reset internal state
-		num_lives = INITIAL_HEART_COUNT;
+		numLives = INITIAL_HEART_COUNT;
 		bricksCounter.reset();
 		extraPaddlesCount.reset();
 
@@ -282,10 +269,79 @@ public class BrickerGameManager extends GameManager {
 
 		turboStrategy = null;
 
-		Renderable defaultBall = imageReader.readImage("assets/assets/ball.png", true);
-		ball.renderer().setRenderable(defaultBall);
+
 	}
 
+	/**
+	 * Creates a numeric display for the number of lives remaining.
+	 */
+	private void createNumeric() {
+		numericLife = new TextRenderable(Integer.toString(numLives));
+		if (numLives >= INITIAL_HEART_COUNT){
+			numericLife.setColor(Color.green);
+		}
+		numericLifeObject = new GameObject(new Vector2(2 * WALLS_WIDTH,
+				windowDimensions.y() - HEART_HEIGHT_WIDTH - NUMERIC_HEIGHT_WIDTH -5),
+				new Vector2(NUMERIC_HEIGHT_WIDTH, NUMERIC_HEIGHT_WIDTH), numericLife);
+		gameObjects().addGameObject(numericLifeObject, Layer.BACKGROUND);
+	}
+
+	/**
+	 * Creates the background of the game window.
+	 *
+	 * @param imageReader The image reader used to load the background image.
+	 */
+	private void createBackground(ImageReader imageReader) {
+		Renderable backgroundImage = imageReader.readImage("assets/assets/DARK_BG2_small.jpeg", true);
+		GameObject background = new GameObject(Vector2.ZERO, new Vector2(windowDimensions.x(),
+				windowDimensions.y()), backgroundImage);
+		gameObjects().addGameObject(background, Layer.BACKGROUND);
+		background.setCoordinateSpace(CoordinateSpace.CAMERA_COORDINATES);
+	}
+
+	/**
+	 * Creates the paddle for the user.
+	 *
+	 * @param imageReader The image reader used to load the paddle image.
+	 * @param inputListener The input listener for user input.
+	 */
+	private void createPaddle(ImageReader imageReader, UserInputListener inputListener) {
+		Renderable paddleImage = imageReader.readImage("assets/assets/paddle.png", true);
+		GameObject userPaddle =  new Paddle(Vector2.ZERO,
+				new Vector2(PADDLE_WIDTH, PADDLE_BRICK_HEIGHT),
+				paddleImage, inputListener, windowDimensions);
+		userPaddle.setCenter(new Vector2(windowDimensions.x()/2, windowDimensions.y()-PADDLE_FROM_EDGE));
+		gameObjects().addGameObject(userPaddle, Layer.DEFAULT);
+		this.userPaddle = (Paddle)userPaddle;
+	}
+
+	/**
+	 * Creates the hearts that represent the player's lives.
+	 *
+	 * @param imageReader The image reader used to load the heart image.
+	 */
+	private void createHearts(ImageReader imageReader) {
+		this.heartImage = imageReader.readImage("assets/assets/heart.png", true);
+		float len_heart = HEART_HEIGHT_WIDTH+1;
+		hearts = new GameObject[MAX_STREAKS];
+		for(int i=0; i<MAX_STREAKS; i++){
+			hearts[i] = new GameObject(new Vector2(2*WALLS_WIDTH+(i*len_heart),
+					windowDimensions.y()-HEART_HEIGHT_WIDTH-2),
+					new Vector2(HEART_HEIGHT_WIDTH, HEART_HEIGHT_WIDTH), heartImage);
+			if (i == INITIAL_HEART_COUNT)
+				hearts[i].renderer().setRenderable(null);
+			gameObjects().addGameObject(hearts[i], Layer.BACKGROUND);
+
+		}
+		numLives = INITIAL_HEART_COUNT;
+	}
+
+	/**
+	 * Creates the bricks in the game.
+	 *
+	 * @param imageReader The image reader used to load the brick image.
+	 * @param windowDimensions The dimensions of the game window.
+	 */
 	private void createBricks(ImageReader imageReader, Vector2 windowDimensions) {
 		Renderable brickImage = imageReader.readImage("assets/assets/brick.png", false);
 		Renderable heartImage = imageReader.readImage("assets/assets/heart.png", true);
@@ -293,11 +349,11 @@ public class BrickerGameManager extends GameManager {
 		Random random = new Random();
 		float verticalSpacing = 2;
 
-		float len_bricks = windowDimensions.x()-(2*WALLS_WIDTH+2)-(this.num_bricks-1);
-		float brick_width = len_bricks/this.num_bricks;
-		for (int row = 0; row<this.num_lines; row++){
+		float len_bricks = windowDimensions.x()-(2*WALLS_WIDTH+2)-(this.numBricks -1);
+		float brick_width = len_bricks/this.numBricks;
+		for (int row = 0; row<this.numLines; row++){
 			float y = WALLS_WIDTH + row * (PADDLE_BRICK_HEIGHT + verticalSpacing);
-			for (int col=0; col<this.num_bricks; col++){
+			for (int col = 0; col<this.numBricks; col++){
 
 				int choose_behavior = random.nextInt(1,11);
 				GameObject brick = null;
@@ -379,6 +435,13 @@ public class BrickerGameManager extends GameManager {
 		}
 	}
 
+	/**
+	 * Creates a ball object and adds it to the game.
+	 *
+	 * @param imageReader The image reader used to load the ball image.
+	 * @param soundReader The sound reader used to load the collision sound.
+	 * @param windowDimensions The dimensions of the game window.
+	 */
 	private void createBall(ImageReader imageReader, SoundReader soundReader, Vector2 windowDimensions) {
 		Renderable ballImage = imageReader.readImage("assets/assets/ball.png", true);
 		Sound collisionSound = soundReader.readSound("assets/assets/blop.wav");
@@ -389,6 +452,28 @@ public class BrickerGameManager extends GameManager {
 		gameObjects().addGameObject(ball, Layer.DEFAULT);
 	}
 
+	/**
+	 * Creates the walls of the game window.
+	 *
+	 * @param windowDimensions The dimensions of the game window.
+	 */
+	private void creatingWalls(Vector2 windowDimensions) {
+		GameObject leftWall = new GameObject(Vector2.ZERO, new Vector2(WALLS_WIDTH, windowDimensions.y()),
+				new RectangleRenderable(Color.BLACK));
+		gameObjects().addGameObject(leftWall, Layer.STATIC_OBJECTS);
+
+		GameObject rightWall = new GameObject(new Vector2(windowDimensions.x()-WALLS_WIDTH, 0),
+				new Vector2(windowDimensions.x()-5, windowDimensions.y()), new RectangleRenderable(Color.BLACK));
+		gameObjects().addGameObject(rightWall, Layer.STATIC_OBJECTS);
+
+		GameObject upWall = new GameObject(Vector2.ZERO, new Vector2(windowDimensions.x(), WALLS_WIDTH),
+				new RectangleRenderable(Color.BLACK));
+		gameObjects().addGameObject(upWall, Layer.STATIC_OBJECTS);
+	}
+
+	/**
+	 * Sets the velocity of the ball to a random direction.
+	 */
 	private void setVelocityBall() {
 		ball.setCenter(windowDimensions.mult(0.5f));
 		float ballVelX = BALL_SPEED;
@@ -403,22 +488,15 @@ public class BrickerGameManager extends GameManager {
 		ball.setVelocity(new Vector2(ballVelX, ballVelY));
 	}
 
-	public int getExtraPaddlesCount() { return extraPaddlesCount.value(); }
-	public void incrementExtraPaddles() { extraPaddlesCount.increment(); }
-	public void decrementExtraPaddles() { extraPaddlesCount.decrement(); }
-
 	/**
-	 * Decreases the number of lives by one and updates the life display.
-	 * If the number of lives is greater than 0, it removes the heart image from the display.
+	 * Checks if the given string is a valid integer.
+	 *
+	 * @param s The string to check.
+	 * @return true if the string is a valid integer, false otherwise.
 	 */
-	public void incrementLives() {
-		if (num_lives < MAX_STREAKS) {
-			hearts[num_lives].renderer().setRenderable(heartImage);
-			num_lives++;
-			updateLifeDisplay();
-		}
+	private static boolean isInteger(String s) {
+		return s != null && s.matches("-?\\d+");
 	}
-
 
 	/** Updates the color of the numeric life display based on the number of lives.
 	 * If the number of lives is 3 or more, the color is green.
@@ -426,26 +504,10 @@ public class BrickerGameManager extends GameManager {
 	 * If the number of lives is 1 or less, the color is red.
 	 */
 	private void updateLifeDisplay() {
-		numericLife.setString(Integer.toString(num_lives));
-		if (num_lives >= 3) numericLife.setColor(Color.green);
-		else if (num_lives == 2) numericLife.setColor(Color.yellow);
+		numericLife.setString(Integer.toString(numLives));
+		if (numLives >= 3) numericLife.setColor(Color.green);
+		else if (numLives == 2) numericLife.setColor(Color.yellow);
 		else                numericLife.setColor(Color.red);
-	}
-
-
-
-	private void creatingWalls(Vector2 windowDimensions) {
-		GameObject leftWall = new GameObject(Vector2.ZERO, new Vector2(WALLS_WIDTH, windowDimensions.y()),
-				new RectangleRenderable(Color.BLACK));
-		gameObjects().addGameObject(leftWall, Layer.STATIC_OBJECTS);
-
-		GameObject rightWall = new GameObject(new Vector2(windowDimensions.x()-WALLS_WIDTH, 0),
-				new Vector2(windowDimensions.x()-5, windowDimensions.y()), new RectangleRenderable(Color.BLACK));
-		gameObjects().addGameObject(rightWall, Layer.STATIC_OBJECTS);
-
-		GameObject upWall = new GameObject(Vector2.ZERO, new Vector2(windowDimensions.x(), WALLS_WIDTH),
-				new RectangleRenderable(Color.BLACK));
-		gameObjects().addGameObject(upWall, Layer.STATIC_OBJECTS);
 	}
 
 
